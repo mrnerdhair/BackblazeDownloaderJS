@@ -1,0 +1,25 @@
+{
+  "name": "backblazedownloaderjs",
+  "version": "0.0.0",
+  "description": "BackblazeDownloaderJS",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "author": {
+    "name": "Reid Rankin",
+    "email": "reidrankin@gmail.com"
+  },
+  "devDependencies": {},
+  "dependencies": {
+    "bluebird": "^3.3.4",
+    "filesize": "^3.2.1",
+    "lodash": "^4.6.1",
+    "moment": "^2.12.0",
+    "request": "^2.69.0",
+    "request-promise": "^2.0.1",
+    "sha1": "^1.1.1",
+    "temp": "^0.8.3",
+    "xml2js": "^0.4.16"
+  }
+}

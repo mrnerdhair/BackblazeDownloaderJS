@@ -6,10 +6,9 @@ I got impatient, and so after performing some basic protocol analysis and [getti
 
 # Caveat Emptor
 
-- This is old code. It still works for me, but my test was only about 300MB, so YMMV.
+- This is old code. It still works for me, but my test was only about 300MB, so YMMV. (I've done some basic cleanup so that the code passes `npm audit` and doesn't spit deprecation warnings at runtime, but still.)
 - Part of the point here was as a practical excercise to use while I taught myself Node.js. Mistakes and inelegancies are my own, and hopefully understandable given the context. Specifically, documentation is sparse, there are no test cases, and this isn't something I'd consider production-quality code in this form.
 - This is from the bad old pre-Harmony days of Node.js. No native Promises or async/await keywords, for example; just a lot of Bluebird coroutines and `yield` statements.
-- `package-lock.json` wasn't a thing when I created this; luckily, I still had my old `node_modules` directory, and used a modern version of `npm` to make a lockfile matching all the old versions I was using when the thing actually worked for me.
 - No warranty, express or implied, yadda yadda. At this point, any usage beyond the academic is at your own risk. Specifically, if Backblaze doesn't like the load this puts on their servers, that's between you and them.
 - This is all hereby licensed as [SPDX:BSD-3-Clause](https://opensource.org/licenses/BSD-3-Clause). Specifically, if anyone at Backblaze finds this useful, more power to you.
 

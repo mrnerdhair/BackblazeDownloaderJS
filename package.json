@@ -15,7 +15,7 @@
     "bluebird": "^3.3.4",
     "filesize": "^3.2.1",
     "lodash": "^4.6.1",
-    "moment": "^2.12.0",
+    "moment": "^2.19.3",
     "request": "^2.69.0",
     "request-promise": "^2.0.1",
     "sha1": "^1.1.1",

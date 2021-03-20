@@ -43,26 +43,72 @@ Bluebird.coroutine(function*(emailAddress, password, twoFactorCode, restoreIndex
         return;
     }
 
-    if (!twoFactorCode) twoFactorCode = yield questionAsync("2FA Code: [none] ");
+    /*if (!twoFactorCode) twoFactorCode = yield questionAsync("2FA Code: [none] ");
     if (twoFactorCode == null || twoFactorCode.length == 0) twoFactorCode = "none";
     if (twoFactorCode != "none" && twoFactorCode.length != 6) {
         console.error("Invalid 2FA Code!");
         return;
-    }
-
-    console.log("Logging in...");
+    }*/
 
     let emailHex = Buffer.from(emailAddress, "utf8").toString("hex");
     let pwHex = Buffer.from(password, "utf8").toString("hex");
     let bzSanity = sha1(emailHex);
     bzSanity = bzSanity[1] + bzSanity[3] + bzSanity[5] + bzSanity[7];
+
+    console.log("Requesting B2 session...");
+
+    let create_session = yield requestPromise.post({
+        url: "https://api003.backblazeb2.com/b2api/v1/b2_create_session",
+        body: {
+            "identity": {
+                "identityType":"accountEmail",
+                "email": emailAddress
+            },
+            "clientInfo": {
+                "deviceName": "bzclient",
+                "clientType": "com/backblaze/backup/win"
+            }
+        },
+        json: true
+    });
+    if (!create_session){
+        console.error("Could not create B2 session!");
+        return;
+    }
+    if (create_session.challenge.challengeType != "password"){
+        console.error("Challenge type \"" + create_session.challenge.challengeType + "\" is currently unsupported.");
+        console.error("Please create a new issue on GitHub and tag @kostirez1 in it.");
+        return;
+    }
+    console.log("B2 session created.");
+
+    console.log("Logging into the B2 session...");
+    let present_credentials = yield requestPromise.post({
+        url: "https://api003.backblazeb2.com/b2api/v1/b2_present_credentials",
+        body: {
+            "credentials": {
+                "credentialsType": "password",
+                "password": password
+            },
+            "authToken": create_session.authToken
+        },
+        json: true
+    });
+    if (!present_credentials || present_credentials.credentialProblem != null){
+        console.error("Credentials check failed! Type: " + present_credentials.credentialProblem.credentialProblemType + ", Reason: " + present_credentials.credentialProblem.reason);
+        return;
+    }
+    console.log("Credentials accepted.");
+
     let result = yield requestPromise.post({
         url: "https://ca001.backblaze.com/api/restoreinfo",
+        headers: {
+            "Authorization": present_credentials.authToken
+        },
         formData: {
             "version": "4.0.4.903",
             "hexemailaddr": emailHex,
             "hexpassword": pwHex,
-            "twofactorverifycode": twoFactorCode,
             "bz_auth_token": "none",
             "bzsanity": bzSanity,
             "bzpostp": {
@@ -209,18 +255,14 @@ Bluebird.coroutine(function*(emailAddress, password, twoFactorCode, restoreIndex
                     tempFilePath: streamInfo.tempFilePath,
                     requestOptions: {
                         url: "https://" + dnsAddresses[numStreamsSpawned % dnsAddresses.length] + "/api/restorezipdownloadex",
-                        headers: [
-                            {
-                                name: "Host",
-                                value: hostName
-                            }
-                        ],
                         method: "POST",
+                        headers: {
+                            "Authorization": present_credentials.authToken
+                        },
                         formData: {
                             "version": "4.0.4.903",
                             "hexemailaddr": emailHex,
                             "hexpassword": pwHex,
-                            "twofactorverifycode": twoFactorCode,
                             "bz_auth_token": "none",
                             "bzsanity": bzSanity,
                             "hguid": restore.$["hguid"],
